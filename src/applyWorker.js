@@ -9,12 +9,13 @@ const defer = function() {
 
 const applyWorker = (worker) => {
 	return createStore => (reducer, initialState, enhancer) => {
+		// 判断浏览器是否支持 worker
 		if (!(worker instanceof Worker)) {
 			console.error('Expect input to be a Web Worker. Fall back to normal store.');
 			return createStore(reducer, initialState, enhancer);
 		}
 
-		// New reducer for workified store
+		// 新增强 store 的 reducer 函数：
 		let replacementReducer = (state, action) => {
 			if (action.state) {
 				return action.state;
@@ -22,17 +23,17 @@ const applyWorker = (worker) => {
 			return state;
 		}
 
-		// Start task id;
+		// Task id;
 		let taskId = 0;
 		let taskCompleteCallbacks = {};
 
-		// Create store using new reducer
+		// 使用新 reducer 产生新 store
 		let store = createStore(replacementReducer, reducer({}, {}), enhancer);
 
-		// Store reference of old dispatcher
+		// 老 dispatch 函数
 		let next = store.dispatch;
 
-		// Replace dispatcher
+		// 替换 dispatch 函数，增加一层判断
 		store.dispatch = (action) => {
 			if (typeof action.type === 'string') {
 				if (window.disableWebWorker) {
@@ -57,7 +58,7 @@ const applyWorker = (worker) => {
 
 		store.isWorker = true;
 		
-		// Add worker events listener
+		// worker 监听事件
 		worker.addEventListener('message', function(e) {
 			let action = e.data;
 			if (typeof action.type === 'string') {

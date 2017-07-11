@@ -1,5 +1,5 @@
 const createWorker = (reducer) => {
-	// Initialize ReduxWorekr
+	// 实例化一个 ReduxWorekr
 	let worker = new ReduxWorker();
 	
 	let messageHandler = (e) => {
@@ -10,12 +10,12 @@ const createWorker = (reducer) => {
 				throw new Error('Expect reducer to be function. Have you registerReducer yet?');
 			}
 
-			// Set new state
+			// 计算新的 state
 			let state = worker.state;
 			state = worker.state = worker.reducer(state, action);
 			state = worker.transform(state);
 
-			// Send new state to main thread
+			// 将新的 state 发送到主线程
 			self.postMessage({
 				type: action.type,
 				state: state,
@@ -32,7 +32,7 @@ const createWorker = (reducer) => {
 				throw new Error('Cannot find runner for task ' + action.task + '. Have you registerTask yet?');
 			}
 
-			// Send new state to main thread
+			// 将新的 state 发送到主线程
 			self.postMessage({
 				_taskId: action._taskId,
 				response: taskRunner(action)
@@ -52,10 +52,8 @@ const createWorker = (reducer) => {
 
 class ReduxWorker {
 	constructor() {
-		// Taskrunners
 		this.tasks = {};
 
-		// Redux-specific variables
 		this.state = {};
 		this.reducer = null;
 		this.transform = function(state) { return state; }
